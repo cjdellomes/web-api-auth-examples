@@ -7,15 +7,15 @@
  * https://developer.spotify.com/web-api/authorization-guide/#client_credentials_flow
  */
 
-var request = require('request'); // "Request" library
-var environment = process.env.NODE_ENV || 'development';
-var config = require('./config')[env];
+const request = require('request'); // "Request" library
+const env = process.env.NODE_ENV || 'development';
+const config = require('../config')[env];
 
-var client_id = config.clientID; // Your client id
-var client_secret = config.clientSecret; // Your secret
+const client_id = config.clientID; // Your client id
+const client_secret = config.clientSecret; // Your secret
 
 // your application requests authorization
-var authOptions = {
+const authOptions = {
   url: 'https://accounts.spotify.com/api/token',
   headers: {
     'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
@@ -30,16 +30,36 @@ request.post(authOptions, function(error, response, body) {
   if (!error && response.statusCode === 200) {
 
     // use the access token to access the Spotify Web API
-    var token = body.access_token;
-    var options = {
-      url: 'https://api.spotify.com/v1/users/jmperezperez',
+    const token = body.access_token;
+    let artist = 'ax%20and%20the%20hatchetmen';
+    let options = {
+      url: 'https://api.spotify.com/v1/search?q=' + artist + '&type=artist',
       headers: {
         'Authorization': 'Bearer ' + token
       },
       json: true
     };
     request.get(options, function(error, response, body) {
-      console.log(body);
+      if (body.artists === undefined) {
+        return;
+      }
+      const artists = body.artists;
+
+      let items = [];
+      if (artists === undefined) {
+        return;
+      }
+      items = artists.items;
+
+      if (items == undefined || items.length === 0) {
+        return;  
+      }
+
+      let artistID = items[0].id;
+        options.url = 'https://api.spotify.com/v1/artists/' + artistID + '/related-artists';
+        request.get(options, function(error, response, body) {
+          console.log(body);
+        });
     });
   }
 });
