@@ -8,9 +8,11 @@
  */
 
 var request = require('request'); // "Request" library
+var environment = process.env.NODE_ENV || 'development';
+var config = require('./config')[env];
 
-var client_id = 'CLIENT_ID'; // Your client id
-var client_secret = 'CLIENT_SECRET'; // Your secret
+var client_id = config.clientID; // Your client id
+var client_secret = config.clientSecret; // Your secret
 
 // your application requests authorization
 var authOptions = {
